@@ -60,34 +60,15 @@ function sleep(ms) {
 }
 async function mssleep(a) {
     for (let i = 0; i < seconds; i++) {
-        console.log(`Waiting ${i} seconds...`);
         await sleep(i * 1000);
     }
     console.log('Done');
 }
+
 let seconds = 3;
-
-
-const data = new SlashCommandBuilder()
-	.setName('gif')
-	.setDescription('Sends a random gif!')
-	.addStringOption(option =>
-		option.setName('category')
-			.setDescription('The gif category')
-			.setRequired(true)
-			.addChoice('Funny', 'gif_funny')
-			.addChoice('Meme', 'gif_meme')
-			.addChoice('Movie', 'gif_movie'));
-
 const prefix = ',';
 
 
-client.on('message', message => {
-    if (!message) {
-        console.error("Crash Patched")
-        return;
-    }
-})
 
 client.on('message', message => {
     let date_ob = new Date();
