@@ -1,26 +1,15 @@
-
-const { Client, Intents, Message, MessageEmbed, TextChannel, DataResolver} = require('discord.js');
-
+const { Client, Intents, Message, MessageEmbed, TextChannel, DataResolver, Collection} = require('discord.js');
 const { read, } = require('fs');
-
 const fs = require('fs');
-
 const { joinVoiceChannel } = require('@discordjs/voice');
-
 const queue = new Map();
-
 const express = require('express');
-
 const { port } = require('./config.json');
-
 const { SlashCommandBuilder } = require('@discordjs/builders');
-
 const { generateDependencyReport } = require('@discordjs/voice');
-
 console.log(generateDependencyReport());
-
 const client = new Client({intents : [Intents.FLAGS.GUILD_MESSAGES , Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILDS]});
-
+client.slowdown = new Collection();
 const readline = require('readline');
 const reader = readline.createInterface({
     input: process.stdin,
@@ -80,6 +69,38 @@ client.on('message', message => {
         flags: 'a'
     })
     log.write(content);
+
+    const id = message.channel.id;
+    const att = client.slowdown.get(id)
+    const ratio = 3;
+    const timeSpace = 5;
+    if (att) {
+        att.msgCount++;
+        const currentTime = Date.now();
+        const timePassed = (currentTime - att.time) / 1000;
+        let currentid;
+        if (att.msgCount >= ratio && att.msgCount / timePassed >= ratio) {
+            message.channel.setRateLimitPerUser(5, "stop it")
+            message.delete()
+            message.channel.send("This is why we cant have nice things")
+        }
+
+        if (timePassed >= timeSpace) {
+            att.time = currentTime;
+            att.msgCount = 0;
+        }
+
+    } else {
+        client.slowdown.set(id, {
+            time: Date.now(),
+            msgCount: 1
+        });
+        message.channel.setRateLimitPerUser(0,"ok")
+    }
+
+
+
+
 
     if (!message.content.startsWith(prefix)) return;
   
@@ -145,6 +166,17 @@ client.on('message', message => {
             message.channel.send("No kick for you :)")
         }
 
+    }
+    else if (cmd === "slowdown") {
+        if (message.author.role = "Head Mod" || "H-mod" || "H-Mod") {
+            message.channel.setRateLimitPerUser(args[1], `Admin command by ${message.author.username} with privilage of ${message.author.role}`)
+            message.delete();
+            message.channel.send(`Rate limit / slowdown has been changed to ${args[1]} by ${message.author.username}`)
+
+        }
+        else {
+            message.channel.send("stop trying")
+        }
     }
     else if (cmd === "nobitches") {
         console.log(message.author.role);
