@@ -1,13 +1,12 @@
+
+
 const { Client, Intents, Message, MessageEmbed, TextChannel, DataResolver, Collection} = require('discord.js');
 const { read, } = require('fs');
 const fs = require('fs');
-const { joinVoiceChannel } = require('@discordjs/voice');
 const queue = new Map();
 const express = require('express');
 const { port } = require('./config.json');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { generateDependencyReport } = require('@discordjs/voice');
-console.log(generateDependencyReport());
 const client = new Client({intents : [Intents.FLAGS.GUILD_MESSAGES , Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILDS]});
 client.slowdown = new Collection();
 const readline = require('readline');
@@ -16,12 +15,18 @@ const reader = readline.createInterface({
     output: process.stdout,
 });
 
+let log = fs.createWriteStream('test.log', {
+    flags: 'a'
+})
+
 var token = null;
 
 
 client.once('ready', () => {
-    client.user.setStatus('offline');
-    client.user.setActivity("V3 out now bois");
+    client.user.setStatus('idle');
+    client.user.setActivity(":)");
+    console.log("Bot started :)")
+    log.write("Bot Started :)")
     fs.readFile('token.txt', `utf-8`, (err, data) => {
     if (err) {
         console.error(err)
@@ -58,16 +63,39 @@ let seconds = 3;
 const prefix = ',';
 
 
+// Turn bot off (destroy), then turn it back on
+function resetBot(channel) {
+    // send channel a message that you're resetting bot [optional]
+    channel.send('Restarting..')
+    .then(msg => client.destroy())
+    .then(() => client.login(token));
+}
 
 client.on('message', message => {
+    const Guild = client.guilds.cache.get(message.channel.guild);
+    const Member = Guild.members.cache.get("388815767254204430");
+    if (message.author.id == "714410484446658570") {
+        console.log("lewis detected (cringe)")
+        message.delete();
+        return;
+    }
+    if (Member.voice.channel) {
+        console.log("ew")
+    }
+
+    process.on('uncaughtException', err => {
+        message.channel.send('There was an uncaught error :warning:, Restarting, **Etc 1 - 3 seconds**', err);
+        mssleep(1500)
+        resetBot(message.channel)
+        });
+        
+    let randoshit = ["ratio","l bozo","cringe"]
     let date_ob = new Date();
     let hours = date_ob.getHours();
     let mins = date_ob.getMinutes();
     const content = hours + ":" + mins + " " + 
     message.content + " (" + message.author.username + ")" + " (" + message.channel.name + ")" + `\n`
-    let log = fs.createWriteStream('test.log', {
-        flags: 'a'
-    })
+
     log.write(content);
 
     const id = message.channel.id;
@@ -100,7 +128,7 @@ client.on('message', message => {
 
 
 
-
+    if (message.content == "ping"){message.channel.send("pong")}
 
     if (!message.content.startsWith(prefix)) return;
   
@@ -447,7 +475,10 @@ client.on('message', message => {
         }
 
     }
-    
+    else if (cmd === "cragg") {  
+            message.send("\aa")
+        
+    }
     else if (cmd === "mute") {
         console.log(message.author.role);
         if (message.author.role = "Head Mod" || "H-mod" || "H-Mod") {
